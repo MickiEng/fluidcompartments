@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body Fluid Compartments</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            
+            /* Updated Compartment Colors */
+            --color-intracellular: #f87171; 
+            --color-interstitial: #38bdf8;  
+            --color-intravascular: #fde047; /* Straw Yellow */
+            
+            --neutral-fill: #f1f5f9;
+            --neutral-stroke: #94a3b8;
+        }
+
+        * { box-sizing: border-box; font-family: sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            margin: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { font-size: 1.5rem; margin: 0 0 8px 0; }
+        .subtitle { font-size: 0.95rem; color: var(--text-muted); margin: 0; }
+
+        .diagram-area {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 10px;
+        }
+
+        svg { max-height: 320px; width: 100%; height: auto; }
+
+        /* Label Styling */
+        .diagram-label {
+            font-size: 11px;
+            font-weight: 700;
+            fill: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            pointer-events: none;
+        }
+
+        /* Smooth transitions for colors and glow */
+        .comp-icf, .comp-isf, .comp-ivf { 
+            transition: fill 0.3s ease, stroke 0.3s ease, filter 0.3s ease; 
+        }
+
+        /* Default Grayscale */
+        .comp-icf { fill: #e2e8f0; stroke: #94a3b8; }
+        .comp-isf { fill: #f8fafc; stroke: #cbd5e1; }
+        .comp-ivf { fill: #f1f5f9; stroke: #94a3b8; }
+        .vessel-wall { fill: #cbd5e1; stroke: #64748b; stroke-width: 2; }
+        .organelle { fill: rgba(0,0,0,0.05); transition: fill 0.3s ease; }
+
+        /* Highlight Logic */
+        .highlight-icf .comp-icf { fill: var(--color-intracellular); stroke: #dc2626; filter: drop-shadow(0 0 5px rgba(248, 113, 113, 0.4)); }
+        .highlight-icf .organelle { fill: rgba(0,0,0,0.15); }
+        .highlight-icf .label-cell { fill: #7f1d1d; } /* Darker red label when active */
+        
+        .highlight-isf .comp-isf { fill: var(--color-interstitial); stroke: #0284c7; filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.3)); }
+        
+        .highlight-ivf .comp-ivf { fill: var(--color-intravascular); stroke: #eab308; filter: drop-shadow(0 0 5px rgba(253, 224, 71, 0.4)); }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 8px;
+            border: 2px solid var(--border-color);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        button.active[data-type="icf"] { background: var(--color-intracellular); color: white; border-color: #dc2626; }
+        button.active[data-type="isf"] { background: var(--color-interstitial); color: white; border-color: #0284c7; }
+        button.active[data-type="ivf"] { background: var(--color-intravascular); color: #854d0e; border-color: #eab308; }
+        button.active[data-type="ecf"] { background: #475569; color: white; border-color: #1e293b; }
+
+        .feedback-container {
+            text-align: center;
+            min-height: 50px;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #feedback-text { font-weight: 500; margin: 0; }
+
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+
+<main class="app-container">
+    <header>
+        <h1>Body Fluid Compartments</h1>
+        <p class="subtitle">Click each label to explore where fluid is located in the body.</p>
+    </header>
+
+    <div class="diagram-area">
+        <svg viewBox="0 0 600 300" id="compartment-svg">
+            <rect class="comp-isf" x="10" y="10" width="580" height="280" rx="15" />
+            <text x="25" y="35" class="diagram-label" style="fill: #64748b;">Tissue</text>
+            
+            <rect class="vessel-wall" x="10" y="220" width="580" height="50" rx="4" />
+            <rect class="comp-ivf" x="10" y="224" width="580" height="42" />
+            <text x="300" y="250" text-anchor="middle" class="diagram-label" style="fill: #64748b;">Blood Vessel</text>
+            
+            <g>
+                <path class="comp-icf" d="M120,60 Q100,80 110,120 Q130,170 180,150 Q220,130 200,80 Q180,40 120,60" />
+                <circle class="organelle" cx="155" cy="105" r="12" /> 
+                <ellipse class="organelle" cx="135" cy="130" rx="5" ry="3" transform="rotate(-30 135 130)" /> 
+                <text x="155" y="142" text-anchor="middle" class="diagram-label" style="fill: #64748b;">Cell</text>
+                
+                <path class="comp-icf" d="M320,50 Q280,60 270,110 Q280,160 340,155 Q400,140 380,80 Q360,40 320,50" />
+                <circle class="organelle" cx="330" cy="100" r="14" />
+                
+                <path class="comp-icf" d="M480,70 Q450,80 460,130 Q480,170 530,140 Q560,110 530,80 Q510,60 480,70" />
+                <circle class="organelle" cx="505" cy="115" r="11" />
+            </g>
+        </svg>
+    </div>
+
+    <nav class="controls">
+        <button data-type="icf">Intracellular</button>
+        <button data-type="isf">Interstitial</button>
+        <button data-type="ivf">Intravascular (Plasma)</button>
+        <button data-type="ecf">Extracellular</button>
+    </nav>
+
+    <footer class="feedback-container">
+        <p id="feedback-text">Select a compartment to explore.</p>
+    </footer>
+</main>
+
+<script>
+    const buttons = document.querySelectorAll('button');
+    const svg = document.getElementById('compartment-svg');
+    const feedbackText = document.getElementById('feedback-text');
+
+    const content = {
+        icf: "Fluid located inside the cell membrane.",
+        isf: "Fluid between cells in the tissue space.",
+        ivf: "Fluid within the blood vessel (plasma).",
+        ecf: "All fluid outside the cells, including interstitial fluid and plasma."
+    };
+
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            const type = button.getAttribute('data-type');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // Clear previous highlight classes
+            svg.classList.remove('highlight-icf', 'highlight-isf', 'highlight-ivf');
+
+            if (type === 'ecf') {
+                // Apply both for Extracellular behavior
+                svg.classList.add('highlight-isf', 'highlight-ivf');
+            } else {
+                svg.classList.add(`highlight-${type}`);
+            }
+
+            feedbackText.textContent = content[type];
+        });
+    });
+</script>
+</body>
+</html>
