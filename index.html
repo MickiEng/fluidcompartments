@@ -125,11 +125,27 @@
         #feedback-text { font-weight: 500; margin: 0; }
 
         @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+        /* Ensure the container allows the logo to float inside it */
+.app-container {
+    position: relative; 
+}
+
+/* Position the logo in the corner without affecting other elements */
+.widget-logo {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    max-height: 45px; /* Adjust this to make it smaller or larger */
+    width: auto;
+    pointer-events: none; /* Allows clicks to pass through to buttons if they overlap */
+    opacity: 0.9; /* Optional: makes it look more like a subtle watermark */
+}
     </style>
 </head>
 <body>
 
 <main class="app-container">
+    <img src="https://beal.edu/wp-content/uploads/2022/01/beal-university-logo.png" alt="Beal University Logo" class="widget-logo">
     <header>
         <h1>Body Fluid Compartments</h1>
         <p class="subtitle">Click each label to explore where fluid is located in the body.</p>
