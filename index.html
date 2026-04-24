@@ -130,15 +130,33 @@
     position: relative; 
 }
 
-/* Position the logo in the corner without affecting other elements */
+/* Standard Desktop View: Floating in the corner */
 .widget-logo {
     position: absolute;
     top: 15px;
     right: 15px;
-    max-height: 45px; /* Adjust this to make it smaller or larger */
+    max-height: 45px;
     width: auto;
-    pointer-events: none; /* Allows clicks to pass through to buttons if they overlap */
-    opacity: 0.9; /* Optional: makes it look more like a subtle watermark */
+    z-index: 10; /* Keeps it on top of the background */
+}
+
+/* Mobile View: Moves under the content to prevent overlap */
+@media (max-width: 600px) {
+    .widget-logo {
+        position: relative; /* Takes up its own space instead of floating */
+        top: auto;
+        right: auto;
+        display: block;
+        margin: 30px auto 10px auto; /* Adds space above it and centers it */
+        max-height: 35px; /* Smaller for phone screens */
+    }
+    
+    /* Ensures the container grows to fit the logo at the bottom */
+    .app-container {
+        padding-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+    }
 }
     </style>
 </head>
